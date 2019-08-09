@@ -1,49 +1,42 @@
-FROM centos7:latest
+FROM openjdk:8
 
-ENV ZK_USER=zookeeper \
-    ZK_DATA_DIR=/var/lib/zookeeper/data \
-    ZK_DATA_LOG_DIR=/var/lib/zookeeper/log \
-    ZK_LOG_DIR=/var/log/zookeeper \
-    JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk \
-    ZK_DIST=zookeeper-3.4.11
+ARG ZK_HOME=/opt/zookeeper
+ARG USER=zookeeper
+ARG GROUP=zookeeper
+ARG ZK_DIST=zookeeper-3.4.11
 
-COPY fix-permissions /usr/local/bin
+ENV ZK_REPLICAS=1
 
-RUN INSTALL_PKGS="gettext tar zip unzip hostname nmap-ncat java-1.8.0-openjdk" && \
-    yum install -y $INSTALL_PKGS && \
-    rpm -V $INSTALL_PKGS && \
-    yum clean all  && \
-    curl -fsSL http://www.apache.org/dist/zookeeper/$ZK_DIST/$ZK_DIST.tar.gz | tar xzf - -C /opt && \
-    /usr/local/bin/fix-permissions /opt/$ZK_DIST && \
-    ln -s /opt/$ZK_DIST /opt/zookeeper && \
-    rm -rf /opt/zookeeper/CHANGES.txt \
-        /opt/zookeeper/README.txt \
-        /opt/zookeeper/NOTICE.txt \
-        /opt/zookeeper/CHANGES.txt \
-        /opt/zookeeper/README_packaging.txt \
-        /opt/zookeeper/build.xml \
-        /opt/zookeeper/config \
-        /opt/zookeeper/contrib \
-        /opt/zookeeper/dist-maven \
-        /opt/zookeeper/docs \
-        /opt/zookeeper/ivy.xml \
-        /opt/zookeeper/ivysettings.xml \
-        /opt/zookeeper/recipes \
-        /opt/zookeeper/src \
-        /opt/zookeeper/$ZK_DIST.jar.asc \
-        /opt/zookeeper/$ZK_DIST.jar.md5 \
-        /opt/zookeeper/$ZK_DIST.jar.sha1
+RUN groupadd --gid 1000 ${GROUP} && useradd --uid 1000 --gid 1000 ${USER}
 
-COPY zkGenConfig.sh zkOk.sh zkMetrics.sh /opt/zookeeper/bin/
+RUN \
+  mkdir -p                      /var/lib/zookeeper/data \
+  && chown -R ${USER}:${GROUP}  /var/lib/zookeeper/data \
+  && chmod -R ug+rwx            /var/lib/zookeeper/data
 
-RUN useradd -u 1002 -r -c "Zookeeper User" $ZK_USER && \
-    mkdir -p $ZK_DATA_DIR $ZK_DATA_LOG_DIR $ZK_LOG_DIR /usr/share/zookeeper /tmp/zookeeper && \
-    chown -R 1002:0 $ZK_DATA_DIR $ZK_DATA_LOG_DIR $ZK_LOG_DIR /tmp/zookeeper && \
-    /usr/local/bin/fix-permissions $ZK_DATA_DIR && \
-    /usr/local/bin/fix-permissions $ZK_DATA_LOG_DIR && \
-    /usr/local/bin/fix-permissions $ZK_LOG_DIR && \
-    /usr/local/bin/fix-permissions /tmp/zookeeper
+RUN mkdir -p                   /var/lib/zookeeper/log \
+  && chown -R ${USER}:${GROUP}  /var/lib/zookeeper/log \
+  && chmod -R ug+rwx            /var/lib/zookeeper/log
 
-WORKDIR "/opt/zookeeper"
+RUN mkdir -p                   /var/log/zookeeper \
+  && chown -R ${USER}:${GROUP}  /var/log/zookeeper \
+  && chmod -R ug+rwx            /var/log/zookeeper
+
+RUN mkdir -p                   ${ZK_HOME} \
+  && chown -R ${USER}:${GROUP}  ${ZK_HOME} \
+  && chmod -R ug+rwx            ${ZK_HOME}
+
+RUN mkdir -p                    /tmp/zookeeper \
+  && chown -R ${USER}:${GROUP}  /tmp/zookeeper \
+  && chmod -R ug+rwx            /tmp/zookeeper
+
+RUN mkdir -p                   /usr/share/zookeeper \
+  && wget -q "https://www-us.apache.org/dist/zookeeper/zookeeper-3.5.5/apache-zookeeper-3.5.5-bin.tar.gz" -O zookeeper.tar.gz \
+  && tar vxfz zookeeper.tar.gz -C ${ZK_HOME} --strip-components=1 \
+  && rm -rf zookeeper.tar.gz
+
+COPY zkGenConfig.sh zkOk.sh zkMetrics.sh ${ZK_HOME}/bin/
+
+WORKDIR ${ZK_HOME}
 
 USER 1002

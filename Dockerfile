@@ -3,7 +3,6 @@ FROM openjdk:8
 ARG ZK_HOME=/opt/zookeeper
 ARG USER=zookeeper
 ARG GROUP=zookeeper
-ARG ZK_DIST=zookeeper-3.4.11
 ARG DOWNLOAD_URL="https://www-us.apache.org/dist/zookeeper/zookeeper-3.5.5/apache-zookeeper-3.5.5-bin.tar.gz"
 
 RUN groupadd --gid 1000 ${GROUP} && useradd --uid 1000 --gid 1000 ${USER}

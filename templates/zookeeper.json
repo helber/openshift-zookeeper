@@ -243,7 +243,7 @@
                                 },
                                 "volumeMounts": [
                                     {
-                                        "name": "datadir-zookeeper",
+                                        "name": "datadir",
                                         "mountPath": "/var/lib/zookeeper"
                                     }
                                 ],
@@ -283,8 +283,11 @@
                 "volumeClaimTemplates": [
                     {
                         "metadata": {
+                            "annotations": {
+                                "volume.beta.kubernetes.io/storage-class": "glusterfs-storage",
+                                "volume.beta.kubernetes.io/storage-provisioner": "kubernetes.io/glusterfs"
+                            },
                             "name": "datadir",
-                            "StorageClass": "glusterfs-storage",
                             "labels": {
                                 "application": "${APPLICATION_NAME}"
                             }

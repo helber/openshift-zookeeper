@@ -284,13 +284,14 @@
                     {
                         "metadata": {
                             "name": "datadir",
+                            "StorageClass": "glusterfs-storage",
                             "labels": {
                                 "application": "${APPLICATION_NAME}"
                             }
                         },
                         "spec": {
                             "accessModes": [
-                                "ReadWriteOnce"
+                                "ReadWriteMany"
                             ],
                             "resources": {
                                 "requests": {

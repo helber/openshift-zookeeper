@@ -283,7 +283,7 @@
                 "volumeClaimTemplates": [
                     {
                         "metadata": {
-                            "name": "datadir-zookeeper",
+                            "name": "datadir",
                             "StorageClass": "glusterfs-storage",
                             "labels": {
                                 "application": "${APPLICATION_NAME}"
